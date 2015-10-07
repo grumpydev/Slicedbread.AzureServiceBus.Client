@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
 
     using Microsoft.ServiceBus.Messaging;
@@ -50,11 +52,26 @@
         private async Task ProcessMessage(BrokeredMessage message)
         {
             var metaData = new MessageMetadata { MessageType = message.ContentType };
+            var bodyString = await this.GetBodyString(message);
+            dynamic body = this.serialiser.Deserialise(bodyString);
 
             foreach (var subscriber in this.subscribers.Where(subscriber => subscriber.CanProcess(metaData)))
             {
                 
             }
+        }
+
+        private async Task<string> GetBodyString(BrokeredMessage message)
+        {
+            var body = message.GetBody<Stream>();
+
+            string bodyString;
+            using (var reader = new StreamReader(body, Encoding.UTF8))
+            {
+                bodyString = await reader.ReadToEndAsync();
+            }
+
+            return bodyString;
         }
 
         private void VerifyQueue(string connectionString, string queueName, QueueDescription queueDescription)
