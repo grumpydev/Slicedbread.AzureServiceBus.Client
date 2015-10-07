@@ -7,7 +7,5 @@
         string Serialise(object payload);
 
         dynamic Deserialise(string payload);
-
-        TDestination Deserialise<TDestination>(string payload);
     }
 }
