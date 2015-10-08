@@ -6,6 +6,6 @@ namespace Slicedbread.AzureServiceBus.Client
     {
         void Connect(string connectionString, string queueName);
 
-        Task Send(object payload);
+        Task Send(string messageType, object payload);
     }
 }
