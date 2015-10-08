@@ -76,6 +76,7 @@
   <ItemGroup>
     <Compile Include="Fakes\FakeServiceBus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceBusClientFixture.cs" />
     <Compile Include="ServiceBusListenerFixture.cs" />
   </ItemGroup>
   <ItemGroup>

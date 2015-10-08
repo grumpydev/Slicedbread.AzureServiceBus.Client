@@ -37,18 +37,16 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
         }
 
         [Fact]
-        public void Should_verify_queue_on_startup()
+        public void Should_verify_queue_on_connect()
         {
             // Given
             var listener = new ServiceBusListener(
-                this.connectionString,
-                this.queueName,
                 Enumerable.Empty<ISubscriber>(),
                 this.serialiser,
                 this.bus);
 
             // When
-            listener.Connect();
+            listener.Connect(this.connectionString, this.queueName);
 
             // Then
             this.bus.VerifyQueueConnectionString.ShouldEqual(this.connectionString);
@@ -62,15 +60,13 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             // Given
             var description = new QueueDescription(this.queueName);
             var listener = new ServiceBusListener(
-                this.connectionString,
-                this.queueName,
                 Enumerable.Empty<ISubscriber>(),
                 this.serialiser,
                 this.bus,
                 description);
 
             // When
-            listener.Connect();
+            listener.Connect(this.connectionString, this.queueName);
 
             // Then
             this.bus.VerifyQueueDescription.ShouldBeSameAs(description);
@@ -81,14 +77,12 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
         {
             // Given
             var listener = new ServiceBusListener(
-                this.connectionString,
-                this.queueName,
                 Enumerable.Empty<ISubscriber>(),
                 this.serialiser,
                 this.bus);
 
             // When
-            listener.Connect();
+            listener.Connect(this.connectionString, this.queueName);
 
             // Then
             this.bus.ConnectionString.ShouldEqual(this.connectionString);
@@ -102,13 +96,11 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             var subscriberOne = A.Fake<ISubscriber>();
             var subscriberTwo = A.Fake<ISubscriber>();
             var listener = new ServiceBusListener(
-                this.connectionString,
-                this.queueName,
                 new[] { subscriberOne, subscriberTwo },
                 this.serialiser,
                 this.bus);
             var message = this.GetBrokeredMessage("foo");
-            listener.Connect();
+            listener.Connect(this.connectionString, this.queueName);
 
             // When
             this.bus.CallBack.Invoke(message).Wait();
@@ -129,13 +121,11 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             var subscriberTwo = A.Fake<IDynamicSubscriber>();
             A.CallTo(() => subscriberTwo.CanProcess(A<MessageMetadata>._)).Returns(false);
             var listener = new ServiceBusListener(
-                this.connectionString,
-                this.queueName,
                 new[] { subscriberOne, subscriberTwo },
                 this.serialiser,
                 this.bus);
             var message = this.GetBrokeredMessage("foo");
-            listener.Connect();
+            listener.Connect(this.connectionString, this.queueName);
 
             // When
             this.bus.CallBack.Invoke(message).Wait();
@@ -165,13 +155,11 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
                     baz = model.Baz;
                 }).Returns(Task.FromResult(0));
             var listener = new ServiceBusListener(
-                this.connectionString,
-                this.queueName,
                 new[] { subscriberOne },
                 new SimpleJsonSerialiser(), 
                 this.bus);
             var message = this.GetBrokeredMessage("foo", "{ \"Foo\" : \"Bar\", \"Baz\" : 23 }");
-            listener.Connect();
+            listener.Connect(this.connectionString, this.queueName);
 
             // When
             this.bus.CallBack.Invoke(message).Wait();
