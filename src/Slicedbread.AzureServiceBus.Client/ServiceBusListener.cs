@@ -1,4 +1,6 @@
-﻿namespace Slicedbread.AzureServiceBus.Client
+﻿using Slicedbread.AzureServiceBus.Client.Serialisers;
+
+namespace Slicedbread.AzureServiceBus.Client
 {
     using System;
     using System.Collections.Generic;
@@ -57,7 +59,17 @@
 
             foreach (var subscriber in this.subscribers.Where(subscriber => subscriber.CanProcess(metaData)))
             {
-                
+                await this.CallSubscriber(subscriber, body, bodyString, metaData);
+            }
+        }
+
+        private async Task CallSubscriber(ISubscriber subscriber, object body, string bodyString, MessageMetadata metaData)
+        {
+            var dynamicSubscriber = subscriber as IDynamicSubscriber;
+
+            if (dynamicSubscriber != null)
+            {
+                await dynamicSubscriber.Process(metaData, body);
             }
         }
 
