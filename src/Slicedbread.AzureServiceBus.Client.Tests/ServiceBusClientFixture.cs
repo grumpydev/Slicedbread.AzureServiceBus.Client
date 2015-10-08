@@ -68,6 +68,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
         public void Should_serialise_message()
         {
             // Given
+            object passedPayload = null;
             var description = new QueueDescription(this.queueName);
             var listener = new ServiceBusClient(
                 this.serialiser,
@@ -75,45 +76,21 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
                 description);
             listener.Connect(this.connectionString, this.queueName);
             var payload = new Object();
-            A.CallTo(() => this.bus.Send(A<string>._, A<Stream>._))
-             .Returns(Task.FromResult(0));
+            A.CallTo(() => this.serialiser.Serialise(payload))
+             .Invokes(foc => passedPayload = foc.Arguments[0])
+             .Returns("FooBarBaz");
 
             // When
-            listener.Send("messageType", payload);
+            listener.Send("messageType", payload).Wait();
 
             // Then
-            A.CallTo(() => this.serialiser.Serialise(payload))
-             .MustHaveHappened(Repeated.Exactly.Once);
+            passedPayload.ShouldBeSameAs(payload);
         }
 
         [Fact]
         public void Should_set_message_type()
         {
             // Given
-            var messageType = string.Empty;
-            var description = new QueueDescription(this.queueName);
-            var listener = new ServiceBusClient(
-                this.serialiser,
-                this.bus,
-                description);
-            listener.Connect(this.connectionString, this.queueName);
-            var payload = new Object();
-            A.CallTo(() => this.bus.Send(A<string>._, A<Stream>._))
-             .Invokes(foc => messageType = (string)foc.Arguments[0])
-             .Returns(Task.FromResult(0));
-
-            // When
-            listener.Send("messageType", payload);
-
-            // Then
-            messageType.ShouldEqual("messageType");
-        }
-
-        [Fact]
-        public void Should_send_stream_from_serialisation_to_servicebus()
-        {
-            // Given
-            var streamContents = string.Empty;
             var description = new QueueDescription(this.queueName);
             var listener = new ServiceBusClient(
                 this.serialiser,
@@ -123,15 +100,33 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             var payload = new Object();
             A.CallTo(() => this.serialiser.Serialise(payload))
              .Returns("FooBarBaz");
-            A.CallTo(() => this.bus.Send(A<string>._, A<Stream>._))
-             .Invokes(foc => streamContents = this.GetStreamContents((Stream)foc.Arguments[1]))
-             .Returns(Task.FromResult(0));
 
             // When
-            listener.Send("messageType", payload);
+            listener.Send("messageType", payload).Wait();
 
             // Then
-            streamContents.ShouldEqual("FooBarBaz");
+            this.bus.SentMessageType.ShouldEqual("messageType");
+        }
+
+        [Fact]
+        public void Should_send_stream_from_serialisation_to_servicebus()
+        {
+            // Given
+            var description = new QueueDescription(this.queueName);
+            var listener = new ServiceBusClient(
+                this.serialiser,
+                this.bus,
+                description);
+            listener.Connect(this.connectionString, this.queueName);
+            var payload = new Object();
+            A.CallTo(() => this.serialiser.Serialise(payload))
+             .Returns("FooBarBaz");
+
+            // When
+            listener.Send("messageType", payload).Wait();
+
+            // Then
+            this.GetStreamContents(this.bus.SentPayloadStream).ShouldEqual("FooBarBaz");
         }
 
         private string GetStreamContents(Stream stream)

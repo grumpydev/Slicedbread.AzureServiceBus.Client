@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.ServiceBus.Messaging;
 using Slicedbread.AzureServiceBus.Client.Serialisers;
 using Slicedbread.AzureServiceBus.Client.ServiceBus;
@@ -25,9 +27,13 @@ namespace Slicedbread.AzureServiceBus.Client
             this.VerifyQueue(connectionString, queueName);
         }
 
-        public Task Send(string messageType, object payload)
+        public async Task Send(string messageType, object payload)
         {
-            throw new System.NotImplementedException();
+            var payloadString = this.serialiser.Serialise(payload);
+
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(payloadString));
+
+            await this.serviceBus.Send(messageType, stream);
         }
 
         private void VerifyQueue(string connectionString, string queueName)

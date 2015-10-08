@@ -18,7 +18,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests.Fakes
 
         public string VerifyQueueConnectionString { get; set; }
 
-        public Stream SentPayloadString { get; set; }
+        public Stream SentPayloadStream { get; set; }
 
         public string SentMessageType { get; set; }
 
@@ -46,7 +46,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests.Fakes
         public Task Send(string messageType, Stream payload)
         {
             this.SentMessageType = messageType;
-            this.SentPayloadString = payload;
+            this.SentPayloadStream = payload;
 
             return Task.FromResult(0);
         }
