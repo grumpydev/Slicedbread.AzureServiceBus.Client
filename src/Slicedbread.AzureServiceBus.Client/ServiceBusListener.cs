@@ -11,7 +11,7 @@ namespace Slicedbread.AzureServiceBus.Client
 
     using Microsoft.ServiceBus.Messaging;
 
-    using Slicedbread.AzureServiceBus.Client.ServiceBus;
+    using ServiceBus;
 
     public class ServiceBusListener : IDisposable
     {
@@ -25,15 +25,32 @@ namespace Slicedbread.AzureServiceBus.Client
 
         private readonly IServiceBus serviceBus;
 
-        public ServiceBusListener(string connectionString, string queueName, IEnumerable<ISubscriber> subscribers, ISerialiser serialiser, IServiceBus serviceBus, QueueDescription queueDescription = null)
+        private readonly QueueDescription queueDescription;
+
+        /// <summary>
+        /// Constructs a new instance of the service bus listener
+        /// </summary>
+        /// <param name="connectionString">Service bus connection string</param>
+        /// <param name="queueName">Name of the queue to use</param>
+        /// <param name="subscribers">Collection of subscribers</param>
+        /// <param name="serialiser">Serialiser to use (defaults to SimpleJson)</param>
+        /// <param name="serviceBus">Raw service bus (defaults to "real" service bus)</param>
+        /// <param name="queueDescription">Queue parameters to use if the queue does not exist</param>
+        public ServiceBusListener(string connectionString, string queueName, IEnumerable<ISubscriber> subscribers, ISerialiser serialiser = null, IServiceBus serviceBus = null, QueueDescription queueDescription = null)
         {
             this.connectionString = connectionString;
             this.queueName = queueName;
             this.subscribers = subscribers.ToArray();
-            this.serialiser = serialiser;
-            this.serviceBus = serviceBus;
+            this.serialiser = serialiser ?? new SimpleJsonSerialiser();
+            this.serviceBus = serviceBus ?? new ServiceBus.ServiceBus();
+            this.queueDescription = queueDescription ?? this.GetDefaultQueueDescription(queueName);
+        }
 
-            this.VerifyQueue(connectionString, queueName, queueDescription);
+        public void Connect()
+        {
+            this.serviceBus.Connect(this.connectionString, this.queueName);
+
+            this.VerifyQueue();
 
             this.AddServiceBusSubscription();
         }
@@ -86,9 +103,9 @@ namespace Slicedbread.AzureServiceBus.Client
             return bodyString;
         }
 
-        private void VerifyQueue(string connectionString, string queueName, QueueDescription queueDescription)
+        private void VerifyQueue()
         {
-            this.serviceBus.VerifyQueue(connectionString, queueDescription ?? this.GetDefaultQueueDescription(queueName));
+            this.serviceBus.VerifyQueue(this.connectionString, this.queueDescription);
         }
 
         private QueueDescription GetDefaultQueueDescription(string queueName)
@@ -96,7 +113,8 @@ namespace Slicedbread.AzureServiceBus.Client
             return new QueueDescription(queueName)
                          {
                              MaxSizeInMegabytes = 5120,
-                             DefaultMessageTimeToLive = new TimeSpan(30, 0, 0)
+                             DefaultMessageTimeToLive = new TimeSpan(30, 0, 0),
+                             MaxDeliveryCount = 3
                          };;
         }
     }

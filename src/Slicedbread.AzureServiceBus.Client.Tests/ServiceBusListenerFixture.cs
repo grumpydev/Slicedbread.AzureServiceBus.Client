@@ -40,13 +40,15 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
         public void Should_verify_queue_on_startup()
         {
             // Given
-            // When
             var listener = new ServiceBusListener(
                 this.connectionString,
                 this.queueName,
                 Enumerable.Empty<ISubscriber>(),
                 this.serialiser,
                 this.bus);
+
+            // When
+            listener.Connect();
 
             // Then
             this.bus.VerifyQueueConnectionString.ShouldEqual(this.connectionString);
@@ -59,8 +61,6 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
         {
             // Given
             var description = new QueueDescription(this.queueName);
-
-            // When
             var listener = new ServiceBusListener(
                 this.connectionString,
                 this.queueName,
@@ -69,8 +69,30 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
                 this.bus,
                 description);
 
+            // When
+            listener.Connect();
+
             // Then
             this.bus.VerifyQueueDescription.ShouldBeSameAs(description);
+        }
+
+        [Fact]
+        public void Should_connect()
+        {
+            // Given
+            var listener = new ServiceBusListener(
+                this.connectionString,
+                this.queueName,
+                Enumerable.Empty<ISubscriber>(),
+                this.serialiser,
+                this.bus);
+
+            // When
+            listener.Connect();
+
+            // Then
+            this.bus.ConnectionString.ShouldEqual(this.connectionString);
+            this.bus.QueueName.ShouldEqual(this.queueName);
         }
 
         [Fact]
@@ -86,6 +108,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
                 this.serialiser,
                 this.bus);
             var message = this.GetBrokeredMessage("foo");
+            listener.Connect();
 
             // When
             this.bus.CallBack.Invoke(message).Wait();
@@ -112,6 +135,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
                 this.serialiser,
                 this.bus);
             var message = this.GetBrokeredMessage("foo");
+            listener.Connect();
 
             // When
             this.bus.CallBack.Invoke(message).Wait();
@@ -147,6 +171,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
                 new SimpleJsonSerialiser(), 
                 this.bus);
             var message = this.GetBrokeredMessage("foo", "{ \"Foo\" : \"Bar\", \"Baz\" : 23 }");
+            listener.Connect();
 
             // When
             this.bus.CallBack.Invoke(message).Wait();

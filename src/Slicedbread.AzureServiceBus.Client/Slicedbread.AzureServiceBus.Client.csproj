@@ -56,6 +56,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialisers\ISerialiser.cs" />
     <Compile Include="Serialisers\SimpleJsonSerialiser.cs" />
+    <Compile Include="ServiceBusClient.cs" />
     <Compile Include="ServiceBusListener.cs" />
     <Compile Include="ServiceBus\IServiceBus.cs" />
     <Compile Include="ServiceBus\ServiceBus.cs" />
