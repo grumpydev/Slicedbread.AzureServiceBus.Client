@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Slicedbread.AzureServiceBus.Client", "Slicedbread.AzureServiceBus.Client\Slicedbread.AzureServiceBus.Client.csproj", "{D8E0C58F-382F-479C-A2F4-26254E80AD29}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Slicedbread.AzureServiceBus.Client.Tests", "Slicedbread.AzureServiceBus.Client.Tests\Slicedbread.AzureServiceBus.Client.Tests.csproj", "{D58CA8BA-BBCE-4334-B214-030DCF3FB60D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Slicedbread.AzureServiceBus.Demo.Sender", "Slicedbread.AzureServiceBus.Demo.Sender\Slicedbread.AzureServiceBus.Demo.Sender.csproj", "{06880ED7-3BC9-4291-B0B5-D34FD3F52A99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Slicedbread.AzureServiceBus.Demo.Receiver", "Slicedbread.AzureServiceBus.Demo.Receiver\Slicedbread.AzureServiceBus.Demo.Receiver.csproj", "{3F931E8F-8966-4FEE-8DD5-E2E6193F97A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{D58CA8BA-BBCE-4334-B214-030DCF3FB60D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D58CA8BA-BBCE-4334-B214-030DCF3FB60D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D58CA8BA-BBCE-4334-B214-030DCF3FB60D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06880ED7-3BC9-4291-B0B5-D34FD3F52A99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06880ED7-3BC9-4291-B0B5-D34FD3F52A99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06880ED7-3BC9-4291-B0B5-D34FD3F52A99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06880ED7-3BC9-4291-B0B5-D34FD3F52A99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F931E8F-8966-4FEE-8DD5-E2E6193F97A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F931E8F-8966-4FEE-8DD5-E2E6193F97A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F931E8F-8966-4FEE-8DD5-E2E6193F97A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F931E8F-8966-4FEE-8DD5-E2E6193F97A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
