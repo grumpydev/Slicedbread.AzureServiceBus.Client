@@ -13,6 +13,6 @@ namespace Slicedbread.AzureServiceBus.Client.ServiceBus
 
         Task Send(string messageType, Stream payload);
 
-        void OnMessageAsync(Func<BrokeredMessage, Task> callback, OnMessageOptions options);
+        void OnMessageAsync(Func<IServiceBusMessage, Task> callback, OnMessageOptions options);
     }
 }

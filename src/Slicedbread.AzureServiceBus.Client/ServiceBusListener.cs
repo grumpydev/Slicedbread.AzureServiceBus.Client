@@ -55,24 +55,23 @@ namespace Slicedbread.AzureServiceBus.Client
 
         private void AddServiceBusSubscription()
         {
-            var options = new OnMessageOptions { AutoComplete = true, AutoRenewTimeout = TimeSpan.FromMinutes(1) };
+            var options = new OnMessageOptions { AutoComplete = false, AutoRenewTimeout = TimeSpan.FromMinutes(1) };
 
             this.serviceBus.OnMessageAsync(this.ProcessMessage, options);
         }
 
-        private async Task ProcessMessage(BrokeredMessage message)
+        private async Task ProcessMessage(IServiceBusMessage serviceBusMessage)
         {
-            var metaData = new MessageMetadata { MessageType = message.ContentType };
-            var bodyString = await this.GetBodyString(message);
+            var bodyString = await serviceBusMessage.GetMessageBody();
             dynamic body = this.serialiser.Deserialise(bodyString);
 
             var failed = false;
 
-            foreach (var subscriber in this.subscribers.Where(subscriber => subscriber.CanProcess(metaData)))
+            foreach (var subscriber in this.subscribers.Where(subscriber => subscriber.CanProcess(serviceBusMessage)))
             {
                 try
                 {
-                    await this.CallSubscriber(subscriber, body, bodyString, metaData);
+                    await this.CallSubscriber(subscriber, body, serviceBusMessage);
                 }
                 catch (Exception)
                 {
@@ -83,35 +82,22 @@ namespace Slicedbread.AzureServiceBus.Client
 
             if (failed)
             {
-                await message.AbandonAsync();
+                await serviceBusMessage.AbandonAsync();
             }
             else
             {
-                await message.CompleteAsync();
+                await serviceBusMessage.CompleteAsync();
             }
         }
 
-        private async Task CallSubscriber(ISubscriber subscriber, object body, string bodyString, MessageMetadata metaData)
+        private async Task CallSubscriber(ISubscriber subscriber, object body, IServiceBusMessage serviceBusMessage)
         {
             var dynamicSubscriber = subscriber as IDynamicSubscriber;
 
             if (dynamicSubscriber != null)
             {
-                await dynamicSubscriber.Process(metaData, body);
+                await dynamicSubscriber.Process(serviceBusMessage, body);
             }
-        }
-
-        private async Task<string> GetBodyString(BrokeredMessage message)
-        {
-            var body = message.GetBody<Stream>();
-
-            string bodyString;
-            using (var reader = new StreamReader(body, Encoding.UTF8))
-            {
-                bodyString = await reader.ReadToEndAsync();
-            }
-
-            return bodyString;
         }
 
         private void VerifyQueue(string connectionString, string queueName)
