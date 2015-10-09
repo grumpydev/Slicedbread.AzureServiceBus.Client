@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Slicedbread.AzureServiceBus.Client")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Alternative client for the Azure Service Bus using configurable serialisation.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Slicedbread Ltd")]
 [assembly: AssemblyProduct("Slicedbread.AzureServiceBus.Client")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCopyright("Copyright ©  2015 Slicedbread Ltd")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
