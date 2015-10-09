@@ -4,15 +4,15 @@
     <id>$id$</id>
     <version>$version$</version>
     <title>$title$</title>
-    <authors>$author$</authors>
-    <owners>$author$</owners>
+    <authors>Slicedbread Ltd</authors>
+    <owners>Slicedbread Ltd</owners>
     <licenseUrl>https://github.com/sliced-bread/Slicedbread.AzureServiceBus.Clientblob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/sliced-bread/Slicedbread.AzureServiceBus.Client</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>$description$</description>
+    <description>An alternative client for Azure Service bus that allows pluggable serialisation and comes with JSON support out of the box.</description>
     <copyright>Copyright 2015 Slicedbread Ltd</copyright>
     <dependencies>
-      <dependency id="WindowsAzure.ServiceBus" />
+      <dependency id="WindowsAzure.ServiceBus"  version="3.0.4"/>
     </dependencies>
   </metadata>
 </package>
