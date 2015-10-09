@@ -55,7 +55,7 @@ namespace Slicedbread.AzureServiceBus.Client
 
         private void AddServiceBusSubscription()
         {
-            var options = new OnMessageOptions { AutoComplete = false, AutoRenewTimeout = TimeSpan.FromMinutes(1) };
+            var options = new OnMessageOptions { AutoComplete = true, AutoRenewTimeout = TimeSpan.FromMinutes(1) };
 
             this.serviceBus.OnMessageAsync(this.ProcessMessage, options);
         }
@@ -66,9 +66,28 @@ namespace Slicedbread.AzureServiceBus.Client
             var bodyString = await this.GetBodyString(message);
             dynamic body = this.serialiser.Deserialise(bodyString);
 
+            var failed = false;
+
             foreach (var subscriber in this.subscribers.Where(subscriber => subscriber.CanProcess(metaData)))
             {
-                await this.CallSubscriber(subscriber, body, bodyString, metaData);
+                try
+                {
+                    await this.CallSubscriber(subscriber, body, bodyString, metaData);
+                }
+                catch (Exception)
+                {
+                    failed = true;
+                    break;
+                }
+            }
+
+            if (failed)
+            {
+                await message.AbandonAsync();
+            }
+            else
+            {
+                await message.CompleteAsync();
             }
         }
 

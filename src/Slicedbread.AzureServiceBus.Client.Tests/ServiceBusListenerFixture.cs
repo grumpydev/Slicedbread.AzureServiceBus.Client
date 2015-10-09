@@ -3,8 +3,10 @@ using Slicedbread.AzureServiceBus.Client.Serialisers;
 
 namespace Slicedbread.AzureServiceBus.Client.Tests
 {
+    using System;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Threading;
 
@@ -173,7 +175,52 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
         {
             var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body ?? string.Empty));
 
-            return new BrokeredMessage(bodyStream, true) { ContentType = messageType };
+            var message = new BrokeredMessage(bodyStream, true) { ContentType = messageType };
+
+            this.SetReceiveHeaders(message);
+
+            this.SetReceiveContext(message);
+
+            return message;
+        }
+
+        private void SetReceiveHeaders(BrokeredMessage message)
+        {
+            var receiveHeadersType = Type.GetType("Microsoft.ServiceBus.Messaging.BrokeredMessage+ReceiverHeaders,Microsoft.ServiceBus");
+
+            var receiveHeaders = Activator.CreateInstance(receiveHeadersType, null);
+
+            var property = receiveHeadersType.GetProperty("LockToken");
+
+            var setMethod = property.GetSetMethod();
+
+            setMethod.Invoke(receiveHeaders, new object[] { Guid.NewGuid() });
+
+            var receiveHeadersField = message.GetType()
+                .GetField("receiverHeaders", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            receiveHeadersField.SetValue(message, receiveHeaders);
+        }
+
+        private void SetReceiveContext(BrokeredMessage message)
+        {
+            var receiveContextType = Type.GetType("Microsoft.ServiceBus.Messaging.ReceiveContext,Microsoft.ServiceBus");
+
+            var constructor = receiveContextType.GetConstructor(
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                CallingConventions.Any,
+                new[] { typeof(Guid) },
+                null);
+
+            var context = constructor.Invoke(new object[] { Guid.NewGuid() });
+
+            var property = message.GetType()
+                .GetProperty("ReceiveContext", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            var method = property.GetSetMethod(true);
+
+            method.Invoke(message, new[] { context });
         }
     }
 }
