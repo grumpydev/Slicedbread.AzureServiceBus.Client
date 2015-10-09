@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Slicedbread.AzureServiceBus.Client.Serialisers;
+using Slicedbread.AzureServiceBus.Client.ServiceBus;
 
 namespace Slicedbread.AzureServiceBus.Client.Tests
 {
@@ -101,16 +102,16 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
                 new[] { subscriberOne, subscriberTwo },
                 this.serialiser,
                 this.bus);
-            var message = this.GetBrokeredMessage("foo");
+            var message = this.GetMessage("foo");
             listener.Connect(this.connectionString, this.queueName);
 
             // When
             this.bus.CallBack.Invoke(message).Wait();
 
             // Then
-            A.CallTo(() => subscriberOne.CanProcess(A<MessageMetadata>._))
+            A.CallTo(() => subscriberOne.CanProcess(A<IServiceBusMessage>._))
              .MustHaveHappened(Repeated.Exactly.Once);
-            A.CallTo(() => subscriberTwo.CanProcess(A<MessageMetadata>._))
+            A.CallTo(() => subscriberTwo.CanProcess(A<IServiceBusMessage>._))
              .MustHaveHappened(Repeated.Exactly.Once);
         }
 
@@ -119,23 +120,23 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
         {
             // Given
             var subscriberOne = A.Fake<IDynamicSubscriber>();
-            A.CallTo(() => subscriberOne.CanProcess(A<MessageMetadata>._)).Returns(true);
+            A.CallTo(() => subscriberOne.CanProcess(A<IServiceBusMessage>._)).Returns(true);
             var subscriberTwo = A.Fake<IDynamicSubscriber>();
-            A.CallTo(() => subscriberTwo.CanProcess(A<MessageMetadata>._)).Returns(false);
+            A.CallTo(() => subscriberTwo.CanProcess(A<IServiceBusMessage>._)).Returns(false);
             var listener = new ServiceBusListener(
                 new[] { subscriberOne, subscriberTwo },
                 this.serialiser,
                 this.bus);
-            var message = this.GetBrokeredMessage("foo");
+            var message = this.GetMessage("foo");
             listener.Connect(this.connectionString, this.queueName);
 
             // When
             this.bus.CallBack.Invoke(message).Wait();
 
             // Then
-            A.CallTo(() => subscriberOne.Process(A<MessageMetadata>._, A<object>._))
+            A.CallTo(() => subscriberOne.Process(A<IServiceBusMessage>._, A<object>._))
              .MustHaveHappened(Repeated.Exactly.Once);
-            A.CallTo(() => subscriberTwo.Process(A<MessageMetadata>._, A<object>._))
+            A.CallTo(() => subscriberTwo.Process(A<IServiceBusMessage>._, A<object>._))
              .MustNotHaveHappened();
         }
 
@@ -146,9 +147,9 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             var subscriberOne = A.Fake<IDynamicSubscriber>();
             string foo = null;
             long baz = 0;
-            A.CallTo(() => subscriberOne.CanProcess(A<MessageMetadata>._))
+            A.CallTo(() => subscriberOne.CanProcess(A<IServiceBusMessage>._))
              .Returns(true);
-            A.CallTo(() => subscriberOne.Process(A<MessageMetadata>._, A<object>._))
+            A.CallTo(() => subscriberOne.Process(A<IServiceBusMessage>._, A<object>._))
                 .Invokes(foc =>
                 {
                     dynamic model = foc.Arguments[1];
@@ -160,7 +161,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
                 new[] { subscriberOne },
                 new SimpleJsonSerialiser(), 
                 this.bus);
-            var message = this.GetBrokeredMessage("foo", "{ \"Foo\" : \"Bar\", \"Baz\" : 23 }");
+            var message = this.GetMessage("foo", "{ \"Foo\" : \"Bar\", \"Baz\" : 23 }");
             listener.Connect(this.connectionString, this.queueName);
 
             // When
@@ -171,56 +172,68 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             baz.ShouldEqual(23);
         }
 
-        private BrokeredMessage GetBrokeredMessage(string messageType, string body = null)
+        [Fact]
+        public void Should_complete_message_if_no_error()
         {
-            var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body ?? string.Empty));
+            // Given
+            var subscriberOne = A.Fake<IDynamicSubscriber>();
+            string foo = null;
+            long baz = 0;
+            A.CallTo(() => subscriberOne.CanProcess(A<IServiceBusMessage>._))
+             .Returns(true);
+            A.CallTo(() => subscriberOne.Process(A<IServiceBusMessage>._, A<object>._))
+                .Invokes(foc =>
+                {
+                    dynamic model = foc.Arguments[1];
 
-            var message = new BrokeredMessage(bodyStream, true) { ContentType = messageType };
+                    foo = model.Foo;
+                    baz = model.Baz;
+                }).Returns(Task.FromResult(0));
+            var listener = new ServiceBusListener(
+                new[] { subscriberOne },
+                new SimpleJsonSerialiser(),
+                this.bus);
+            var message = this.GetMessage("foo", "{ \"Foo\" : \"Bar\", \"Baz\" : 23 }");
+            listener.Connect(this.connectionString, this.queueName);
 
-            this.SetReceiveHeaders(message);
+            // When
+            this.bus.CallBack.Invoke(message).Wait();
 
-            this.SetReceiveContext(message);
-
-            return message;
+            // Then
+            message.Completed.ShouldBeTrue();
         }
 
-        private void SetReceiveHeaders(BrokeredMessage message)
+        [Fact]
+        public void Should_abandon_message_if_errors()
         {
-            var receiveHeadersType = Type.GetType("Microsoft.ServiceBus.Messaging.BrokeredMessage+ReceiverHeaders,Microsoft.ServiceBus");
+            // Given
+            var subscriberOne = A.Fake<IDynamicSubscriber>();
+            string foo = null;
+            long baz = 0;
+            A.CallTo(() => subscriberOne.CanProcess(A<IServiceBusMessage>._))
+             .Returns(true);
+            A.CallTo(() => subscriberOne.Process(A<IServiceBusMessage>._, A<object>._))
+                .Invokes(foc =>
+                {
+                    throw new InvalidOperationException();
+                });
+            var listener = new ServiceBusListener(
+                new[] { subscriberOne },
+                new SimpleJsonSerialiser(),
+                this.bus);
+            var message = this.GetMessage("foo", "{ \"Foo\" : \"Bar\", \"Baz\" : 23 }");
+            listener.Connect(this.connectionString, this.queueName);
 
-            var receiveHeaders = Activator.CreateInstance(receiveHeadersType, null);
+            // When
+            this.bus.CallBack.Invoke(message).Wait();
 
-            var property = receiveHeadersType.GetProperty("LockToken");
-
-            var setMethod = property.GetSetMethod();
-
-            setMethod.Invoke(receiveHeaders, new object[] { Guid.NewGuid() });
-
-            var receiveHeadersField = message.GetType()
-                .GetField("receiverHeaders", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            receiveHeadersField.SetValue(message, receiveHeaders);
+            // Then
+            message.Completed.ShouldBeTrue();
         }
 
-        private void SetReceiveContext(BrokeredMessage message)
+        private FakeMessage GetMessage(string messageType, string body = null)
         {
-            var receiveContextType = Type.GetType("Microsoft.ServiceBus.Messaging.ReceiveContext,Microsoft.ServiceBus");
-
-            var constructor = receiveContextType.GetConstructor(
-                BindingFlags.Instance | BindingFlags.NonPublic,
-                null,
-                CallingConventions.Any,
-                new[] { typeof(Guid) },
-                null);
-
-            var context = constructor.Invoke(new object[] { Guid.NewGuid() });
-
-            var property = message.GetType()
-                .GetProperty("ReceiveContext", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            var method = property.GetSetMethod(true);
-
-            method.Invoke(message, new[] { context });
+            return new FakeMessage(messageType, body ?? string.Empty);
         }
     }
 }

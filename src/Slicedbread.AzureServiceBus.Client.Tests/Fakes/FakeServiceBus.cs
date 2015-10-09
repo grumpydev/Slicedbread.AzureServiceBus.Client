@@ -24,7 +24,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests.Fakes
 
         public OnMessageOptions CallbackOptions { get; set; }
 
-        public Func<BrokeredMessage, Task> CallBack { get; set; }
+        public Func<IServiceBusMessage, Task> CallBack { get; set; }
 
         public void Dispose()
         {
@@ -51,7 +51,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests.Fakes
             return Task.FromResult(0);
         }
 
-        public void OnMessageAsync(Func<BrokeredMessage, Task> callback, OnMessageOptions options)
+        public void OnMessageAsync(Func<IServiceBusMessage, Task> callback, OnMessageOptions options)
         {
             this.CallBack = callback;
             this.CallbackOptions = options;
