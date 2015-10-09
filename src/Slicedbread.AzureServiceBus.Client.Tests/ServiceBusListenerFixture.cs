@@ -201,6 +201,7 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
 
             // Then
             message.Completed.ShouldBeTrue();
+            message.Abandoned.ShouldBeFalse();
         }
 
         [Fact]
@@ -228,7 +229,8 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             this.bus.CallBack.Invoke(message).Wait();
 
             // Then
-            message.Completed.ShouldBeTrue();
+            message.Completed.ShouldBeFalse();
+            message.Abandoned.ShouldBeTrue();
         }
 
         private FakeMessage GetMessage(string messageType, string body = null)
