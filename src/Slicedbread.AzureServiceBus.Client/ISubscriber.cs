@@ -1,7 +1,9 @@
-﻿namespace Slicedbread.AzureServiceBus.Client
+﻿using Slicedbread.AzureServiceBus.Client.ServiceBus;
+
+namespace Slicedbread.AzureServiceBus.Client
 {
     public interface ISubscriber
     {
-        bool CanProcess(MessageMetadata metadata);
+        bool CanProcess(IServiceBusMessage metadata);
     }
 }
