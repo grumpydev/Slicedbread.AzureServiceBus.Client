@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Slicedbread.AzureServiceBus.Client;
+using Slicedbread.AzureServiceBus.Client.ServiceBus;
 
 namespace Slicedbread.AzureServiceBus.Demo.Receiver
 {
@@ -30,12 +31,12 @@ namespace Slicedbread.AzureServiceBus.Demo.Receiver
 
     internal class BusSubscriber : IDynamicSubscriber
     {
-        public bool CanProcess(MessageMetadata metadata)
+        public bool CanProcess(IServiceBusMessage metadata)
         {
             return true;
         }
 
-        public Task Process(MessageMetadata metadata, dynamic body)
+        public Task Process(IServiceBusMessage metadata, dynamic body)
         {
             Console.WriteLine("++++++");
             Console.WriteLine("Message type: " + metadata.MessageType);
