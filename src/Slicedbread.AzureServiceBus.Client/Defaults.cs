@@ -10,7 +10,7 @@ namespace Slicedbread.AzureServiceBus.Client
             return new QueueDescription(queueName)
             {
                 MaxSizeInMegabytes = 5120,
-                DefaultMessageTimeToLive = new TimeSpan(30, 0, 0),
+                DefaultMessageTimeToLive = new TimeSpan(7, 0, 0, 0),
                 MaxDeliveryCount = 3
             };
         }

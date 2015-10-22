@@ -11,20 +11,22 @@ namespace Slicedbread.AzureServiceBus.Client
     {
         private readonly IServiceBus serviceBus;
         private readonly ISerialiser serialiser;
-        private readonly QueueDescription queueDescription;
 
-        public ServiceBusClient(ISerialiser serialiser = null, IServiceBus bus = null, QueueDescription queueDescription = null)
+        /// <summary>
+        /// Constructs a new instance of the service bus client
+        /// </summary>
+        /// <param name="serialiser">Serialiser to use (defaults to SimpleJson)</param>
+        /// <param name="serviceBus">Raw service bus (defaults to "real" service bus)</param>
+        public ServiceBusClient(ISerialiser serialiser = null, IServiceBus serviceBus = null)
         {
-            this.serviceBus = bus ?? new ServiceBus.ServiceBus();
+            this.serviceBus = serviceBus ?? new ServiceBus.ServiceBus();
             this.serialiser = serialiser ?? new SimpleJsonSerialiser();
-            this.queueDescription = queueDescription;
-        }   
+        }
 
-        public void Connect(string connectionString, string queueName)
+        public void Connect(string connectionString, string queueName, QueueDescription queueDescription = null)
         {
+            this.VerifyQueue(connectionString, queueName, queueDescription);
             this.serviceBus.Connect(connectionString, queueName);
-
-            this.VerifyQueue(connectionString, queueName);
         }
 
         public async Task Send(string messageType, object payload)
@@ -36,9 +38,9 @@ namespace Slicedbread.AzureServiceBus.Client
             await this.serviceBus.Send(messageType, stream);
         }
 
-        private void VerifyQueue(string connectionString, string queueName)
+        private void VerifyQueue(string connectionString, string queueName, QueueDescription queueDescription)
         {
-            this.serviceBus.VerifyQueue(connectionString, this.queueDescription ?? Defaults.GetDefaultQueueDescription(queueName));
+            this.serviceBus.VerifyQueue(connectionString, queueDescription ?? Defaults.GetDefaultQueueDescription(queueName));
         }
     }
 }

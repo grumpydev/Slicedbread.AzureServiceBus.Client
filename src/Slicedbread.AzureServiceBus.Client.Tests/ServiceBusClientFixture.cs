@@ -54,11 +54,10 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             var description = new QueueDescription(this.queueName);
             var listener = new ServiceBusClient(
                 this.serialiser,
-                this.bus,
-                description);
+                this.bus);
 
             // When
-            listener.Connect(this.connectionString, this.queueName);
+            listener.Connect(this.connectionString, this.queueName, description);
 
             // Then
             this.bus.VerifyQueueDescription.ShouldBeSameAs(description);
@@ -72,9 +71,8 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             var description = new QueueDescription(this.queueName);
             var listener = new ServiceBusClient(
                 this.serialiser,
-                this.bus,
-                description);
-            listener.Connect(this.connectionString, this.queueName);
+                this.bus);
+            listener.Connect(this.connectionString, this.queueName, description);
             var payload = new Object();
             A.CallTo(() => this.serialiser.Serialise(payload))
              .Invokes(foc => passedPayload = foc.Arguments[0])
@@ -94,9 +92,8 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             var description = new QueueDescription(this.queueName);
             var listener = new ServiceBusClient(
                 this.serialiser,
-                this.bus,
-                description);
-            listener.Connect(this.connectionString, this.queueName);
+                this.bus);
+            listener.Connect(this.connectionString, this.queueName, description);
             var payload = new Object();
             A.CallTo(() => this.serialiser.Serialise(payload))
              .Returns("FooBarBaz");
@@ -115,9 +112,8 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             var description = new QueueDescription(this.queueName);
             var listener = new ServiceBusClient(
                 this.serialiser,
-                this.bus,
-                description);
-            listener.Connect(this.connectionString, this.queueName);
+                this.bus);
+            listener.Connect(this.connectionString, this.queueName, description);
             var payload = new Object();
             A.CallTo(() => this.serialiser.Serialise(payload))
              .Returns("FooBarBaz");

@@ -5,11 +5,7 @@ using Slicedbread.AzureServiceBus.Client.ServiceBus;
 namespace Slicedbread.AzureServiceBus.Client.Tests
 {
     using System;
-    using System.IO;
     using System.Linq;
-    using System.Reflection;
-    using System.Text;
-    using System.Threading;
 
     using FakeItEasy;
 
@@ -65,11 +61,10 @@ namespace Slicedbread.AzureServiceBus.Client.Tests
             var listener = new ServiceBusListener(
                 Enumerable.Empty<ISubscriber>(),
                 this.serialiser,
-                this.bus,
-                description);
+                this.bus);
 
             // When
-            listener.Connect(this.connectionString, this.queueName);
+            listener.Connect(this.connectionString, this.queueName, description);
 
             // Then
             this.bus.VerifyQueueDescription.ShouldBeSameAs(description);
